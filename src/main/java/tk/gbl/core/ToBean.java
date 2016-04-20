@@ -4,152 +4,207 @@ import java.util.*;
 import java.io.*;
 
 public class ToBean {
-	String tableName;
-	Map<String, String> tableField;
+  String tableName;
+  String pkg;
 
-	PrintWriter pw;
+  Map<String, String> tableField;
 
-	public ToBean() {
+  PrintWriter pw;
 
-	}
+  public ToBean() {
 
-	public ToBean(String tableName, Map<String, String> tableField) {
-		this.tableName = this.dealTableName(tableName);
-		this.tableField = tableField;
+  }
 
-		System.out.println(this.tableName);
-		
-		try {
+  public ToBean(String tableName, Map<String, String> tableField) {
+    this.tableName = this.dealTableName(tableName);
+    this.tableField = tableField;
 
-			pw = new PrintWriter(new File("./" + this.tableName
-					+ ".java"));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    System.out.println(this.tableName);
 
-	public void setPrintWriter(String path) {
-		File file = new File(path + "/" + tableName + ".java");
-		try {
-			pw = new PrintWriter(file);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
+    try {
+      File dir = new File("./cls/");
+      if (!dir.exists()) {
+        dir.mkdir();
+      }
+      pw = new PrintWriter(new File(dir, this.tableName
+          + ".java"));
+    } catch (FileNotFoundException e) {
+    }
+  }
 
-	public String createStart(String tableName) {
-		return "public class " + tableName + " {\r\n";
-	}
+  public ToBean(String tableName, Map<String, String> tableField, String pkg) {
+    this.tableName = this.dealTableName(tableName);
+    this.tableField = tableField;
+    this.pkg = pkg;
 
-	public String createField(String type, String name) {
-		StringBuilder idtf = new StringBuilder();
-		idtf.append("private ");
-		idtf.append(type);
-		idtf.append(' ');
-		idtf.append(name);
-		idtf.append(';');
-		idtf.append("\r\n");
-		return idtf.toString();
-	}
+    try {
+      File dir = new File("./cls/");
+      if (!dir.exists()) {
+        dir.mkdir();
+      }
+      pw = new PrintWriter(new File(dir, this.tableName
+          + ".java"));
+    } catch (FileNotFoundException e) {
+    }
+  }
 
-	public String createGetMethod(String type, String name) {
-		StringBuilder getMethod = new StringBuilder();
-		getMethod.append("public ");
-		getMethod.append(type);
-		getMethod.append(' ');
-		getMethod.append("get");
-		getMethod.append((char) (name.charAt(0) + 'A' - 'a'));
-		getMethod.append(name.substring(1));
+  public void setPrintWriter(String path) {
+    File dir = new File(path + "/cls/");
+    if (!dir.exists()) {
+      dir.mkdir();
+    }
+    File file = new File(dir, tableName + ".java");
+    try {
+      pw = new PrintWriter(file);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+  }
 
-		getMethod.append("()");
-		getMethod.append('{');
-		getMethod.append("\r\n");
-		getMethod.append('\t');
-		getMethod.append("return " + name);
-		getMethod.append(';');
-		getMethod.append("\r\n");
+  public String createStart(String tableName) {
+    return "package " + pkg + ";\r\n\r\npublic class " + tableName + " {\r\n";
+  }
 
-		getMethod.append('}');
-		getMethod.append("\r\n");
-		return getMethod.toString();
-	}
+  public String createField(String type, String name) {
+    StringBuilder idtf = new StringBuilder();
+    idtf.append("private ");
+    idtf.append(type);
+    idtf.append(' ');
+    idtf.append(this.dealFieldName(name));
+    idtf.append(';');
+    idtf.append("\r\n");
+    return idtf.toString();
+  }
 
-	public String createSetMethod(String type, String name) {
-		StringBuilder setMethod = new StringBuilder();
-		setMethod.append("public ");
-		setMethod.append("void");
-		setMethod.append(' ');
-		setMethod.append("set");
-		setMethod.append((char) (name.charAt(0) + 'A' - 'a'));
-		setMethod.append(name.substring(1));
 
-		setMethod.append("(" + type + " " + name + ")");
-		setMethod.append('{');
-		setMethod.append("\r\n");
-		setMethod.append('\t');
+  public String createGetMethod(String type, String name) {
+    StringBuilder getMethod = new StringBuilder();
+    getMethod.append("public ");
+    getMethod.append(type);
+    getMethod.append(' ');
+    getMethod.append("get");
+    getMethod.append(this.dealFieldMethodName(name));
 
-		setMethod.append("this." + name);
-		setMethod.append(" = " + name);
+    getMethod.append("()");
+    getMethod.append('{');
+    getMethod.append("\r\n");
+    getMethod.append('\t');
+    getMethod.append("return " + this.dealFieldName(name));
+    getMethod.append(';');
+    getMethod.append("\r\n");
 
-		setMethod.append(';');
-		setMethod.append("\r\n");
+    getMethod.append('}');
+    getMethod.append("\r\n");
+    return getMethod.toString();
+  }
 
-		setMethod.append('}');
-		setMethod.append("\r\n");
+  public String createSetMethod(String type, String name) {
+    StringBuilder setMethod = new StringBuilder();
+    setMethod.append("public ");
+    setMethod.append("void");
+    setMethod.append(' ');
+    setMethod.append("set");
+    setMethod.append(this.dealFieldMethodName(name));
 
-		return setMethod.toString();
-	}
+    setMethod.append("(" + type + " " + this.dealFieldName(name) + ")");
+    setMethod.append('{');
+    setMethod.append("\r\n");
+    setMethod.append('\t');
 
-	public String createEnd() {
-		return "\r\n}";
-	}
+    setMethod.append("this." + this.dealFieldName(name));
+    setMethod.append(" = " + this.dealFieldName(name));
 
-	public String dealType(String type) {
-		String jtype = type;
+    setMethod.append(';');
+    setMethod.append("\r\n");
 
-		if (type.equals("text") || type.equals("char")
-				|| type.equals("varchar") || type.equals("tinytext")) {
-			jtype = "String";
-		}
-		else if(type.equals("tinyint") || type.equals("int")
-				|| type.equals("smallint")|| type.equals("mediumint")){
-			jtype = "int";
-		}
-		//else if(type.equals.....
-		else if(type.equals("datetime") || type.equals("time")
-				|| type.equals("year")|| type.equals("timestamp")){
-			jtype = "Date";
-		}
+    setMethod.append('}');
+    setMethod.append("\r\n");
 
-		return jtype;
-	}
-	public String dealTableName(String tableName) {
-		StringBuilder sb = new StringBuilder();
-		sb.append((char)(tableName.charAt(0)+'A'-'a'));
-		sb.append(tableName.substring(1));
-		
-		System.out.println("!!!"+sb.toString());
-		return sb.toString();
-		
-	}
-	public void execute() {
+    return setMethod.toString();
+  }
 
-		pw.println(this.createStart(tableName));
+  public String createEnd() {
+    return "\r\n}";
+  }
 
-		for (String name : tableField.keySet()) {
-			String type = tableField.get(name);
-			type = this.dealType(type);
+  public String dealType(String type) {
+    type = type.toLowerCase();
+    String jtype = type;
 
-			pw.println(this.createField(type, name));
-			pw.println(this.createGetMethod(type, name));
-			pw.println(this.createSetMethod(type, name));
-		}
-		pw.println(this.createEnd());
+    if (type.equalsIgnoreCase("text") || type.equalsIgnoreCase("char")
+        || type.equalsIgnoreCase("varchar") || type.equalsIgnoreCase("tinytext")) {
+      jtype = "String";
+    } else if (type.equalsIgnoreCase("tinyint") || type.equalsIgnoreCase("int")
+        || type.equalsIgnoreCase("smallint") || type.equalsIgnoreCase("mediumint")) {
+      jtype = "Integer";
+    } else if (type.equalsIgnoreCase("tinyint") || type.equalsIgnoreCase("long")
+        || type.equalsIgnoreCase("bigint") || type.equalsIgnoreCase("mediumint")) {
+      jtype = "Long";
+    }
+    //else if(type.equals.....
+    else if (type.equalsIgnoreCase("datetime") || type.equalsIgnoreCase("time")
+        || type.equalsIgnoreCase("year") || type.equalsIgnoreCase("timestamp")) {
+      jtype = "Date";
+    }
 
-		pw.flush();
-	}
+    return jtype;
+  }
+
+  public String dealTableName(String tableName) {
+    tableName = TempUtil.temp(tableName);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(tableName.substring(0, 1).toUpperCase());
+    sb.append(tableName.substring(1));
+    System.out.println(sb);
+    return sb.toString();
+
+  }
+
+  private String dealFieldName(String name) {
+    name = TempUtil.temp(name);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(name.substring(0, 1).toLowerCase());
+    sb.append(name.substring(1));
+    return sb.toString();
+  }
+
+  private String dealFieldMethodName(String name) {
+    name = TempUtil.temp(name);
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(name.substring(0, 1).toUpperCase());
+    sb.append(name.substring(1));
+    return sb.toString();
+  }
+
+
+  public void execute() {
+
+    pw.println(this.createStart(tableName));
+
+    for (String name : tableField.keySet()) {
+      String type = tableField.get(name);
+      type = this.dealType(type);
+
+      pw.println(this.createField(type, name));
+      //pw.println(this.createGetMethod(type, name));
+      //pw.println(this.createSetMethod(type, name));
+    }
+
+    for (String name : tableField.keySet()) {
+      String type = tableField.get(name);
+      type = this.dealType(type);
+
+      //pw.println(this.createField(type, name));
+      pw.println(this.createGetMethod(type, name));
+      pw.println(this.createSetMethod(type, name));
+    }
+    pw.println(this.createEnd());
+
+    pw.flush();
+  }
 
 
 }
