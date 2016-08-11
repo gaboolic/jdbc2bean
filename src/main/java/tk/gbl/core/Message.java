@@ -13,12 +13,13 @@ import java.util.Map;
  *         2013-12-3
  */
 public class Message {
-    private String dburl = "jdbc:mysql://127.0.0.1:3306/code";
+  private String dburl = "jdbc:mysql://127.0.0.1:3306/code";
   private String dbUserName = "root";
   private String dbUserPsw = "admin";
 
+
+
   Connection conn;
-  Statement stmt;
 
   DatabaseMetaData metaData;
 

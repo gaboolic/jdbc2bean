@@ -1,5 +1,12 @@
 package tk.gbl.core;
 
+import tk.gbl.util.FmUtil;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,23 +51,11 @@ public class MainTank {
     for (int i = 0; i < tables.size(); i++) {
       String x = "<table tableName=\"%s\" domainObjectName=\"%s\" enableCountByExample=\"false\" enableUpdateByExample=\"false\" enableDeleteByExample=\"false\" enableSelectByExample=\"false\" selectByExampleQueryId=\"false\"></table>";
       String tableName = tables.get(i);
-      String domainName = dealFieldName(tableName);
+      String domainName = TempUtil.getClassName(tableName);
       System.out.println(String.format(x, tableName, domainName));
     }
   }
 
-
-  private String dealFieldName(String name) {
-    name = TempUtil.temp(name);
-    if (name.startsWith("xd")) {
-      name = name.substring(2);
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(name.substring(0, 1).toUpperCase());
-    sb.append(name.substring(1));
-    return sb.toString();
-  }
 
   private String dealFieldNameLow(String name) {
     name = TempUtil.temp(name);
@@ -73,6 +68,7 @@ public class MainTank {
     sb.append(name.substring(1));
     return sb.toString();
   }
+
 
   public void genMybatisXml() throws Exception {
     message.init();
@@ -99,10 +95,37 @@ public class MainTank {
           "  </bean>";
       String tableName = tables.get(i);
 
-      String domainName = dealFieldName(tableName);
+      String domainName = TempUtil.getClassName(tableName);
       String beanName = dealFieldNameLow(tableName);
       System.out.println(String.format(x, beanName, domainName));
     }
+  }
 
+
+  public void genMybatisTemplateXml() throws Exception {
+    message.init();
+    List<String> tables = message.getTableList();
+
+    for (int i = 0; i < tables.size(); i++) {
+
+      String tableName = tables.get(i);
+      Map<String, String> tableField = message.getField(tableName);
+
+      MybatisTemplate mybatisTemplate = new MybatisTemplate(tableName, tableField);
+      String xml = FmUtil.getTemplateStr("/conf", "mybatisTemplate.ftl", mybatisTemplate);
+
+      try {
+        File dir = new File("./mybatis/");
+        if (!dir.exists()) {
+          dir.mkdir();
+        }
+        PrintWriter pw = new PrintWriter(new File(dir, TempUtil.getClassName(tableName)
+            + ".xml"));
+        pw.println(xml);
+        pw.flush();
+        pw.close();
+      } catch (FileNotFoundException e) {
+      }
+    }
   }
 }
