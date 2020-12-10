@@ -7,6 +7,6 @@ package tk.gbl.core;
  * @author Tian.Dong
  */
 public class CommonConfig {
-    public static String ignorePrefix = "fdrebook_";
+    public static String ignorePrefix = "t_";
 //    public static String ignorePrefix = "flight_";
 }

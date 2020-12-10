@@ -10,9 +10,9 @@ import java.util.*;
  * 2013-12-3
  */
 public class DBInfo {
-    private String dburl = "jdbc:mysql://127.0.0.1:3306/myflight";
+    private String dburl = "jdbc:mysql://127.0.0.1:3306/xxx?nullCatalogMeansCurrent=true";
     private String dbUserName = "root";
-    private String dbUserPsw = "123456";
+    private String dbUserPsw = "111111";
 
 
     Connection conn;
@@ -32,6 +32,9 @@ public class DBInfo {
         List<String> tableLists = null;
         tableLists = new ArrayList<String>();
         while (rs.next()) {
+            if(rs.getString("TABLE_NAME").toUpperCase().contains("DEL")) {
+                continue;
+            }
             tableLists.add(rs.getString("TABLE_NAME"));
         }
         return tableLists;
